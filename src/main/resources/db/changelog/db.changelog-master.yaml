@@ -1,0 +1,15 @@
+databaseChangeLog:
+  - include:
+      file: db/changelog/sql/001-create-mailbox.sql
+  - include:
+      file: db/changelog/sql/002-create-conversation.sql
+  - include:
+      file: db/changelog/sql/003-create-message.sql
+  - include:
+      file: db/changelog/sql/004-create-message-recipient.sql
+  - include:
+      file: db/changelog/sql/005-create-message-attachment.sql
+  - include:
+      file: db/changelog/sql/006-create-provider-event.sql
+  - include:
+      file: db/changelog/sql/007-create-outbox-event.sql

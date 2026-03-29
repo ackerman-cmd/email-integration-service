@@ -1,0 +1,8 @@
+spring:
+  config:
+    import: "optional:file:./secrets.yaml"
+  liquibase:
+    liquibase-schema: public
+
+server:
+  port: 0
