@@ -5,7 +5,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.json.JsonTest
-import java.util.UUID
 
 @JsonTest
 class SendEmailRequestJsonTest {
@@ -16,7 +15,7 @@ class SendEmailRequestJsonTest {
         val json =
             """
             {
-              "mailboxId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+              "fromEmail": "support@bank.example",
               "to": ["egor@mail.ru"],
               "cc": ["egor@mail.ru"],
               "subject": "string",
@@ -28,7 +27,7 @@ class SendEmailRequestJsonTest {
 
         val req = objectMapper.readValue(json, SendEmailRequest::class.java)
 
-        assertThat(req.mailboxId).isEqualTo(UUID.fromString("3fa85f64-5717-4562-b3fc-2c963f66afa6"))
+        assertThat(req.fromEmail).isEqualTo("support@bank.example")
         assertThat(req.to).containsExactly("egor@mail.ru")
         assertThat(req.cc).containsExactly("egor@mail.ru")
         assertThat(req.subject).isEqualTo("string")

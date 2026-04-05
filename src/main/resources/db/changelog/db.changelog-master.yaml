@@ -13,3 +13,5 @@ databaseChangeLog:
       file: db/changelog/sql/006-create-provider-event.sql
   - include:
       file: db/changelog/sql/007-create-outbox-event.sql
+  - include:
+      file: db/changelog/sql/008-seed-queue-mailboxes.sql

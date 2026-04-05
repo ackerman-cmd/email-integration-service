@@ -5,8 +5,12 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotEmpty
 import java.util.UUID
 
+/**
+ * @param fromEmail Полный адрес ящика-отправителя (`support@company.com`), как в [Mailbox.emailAddress].
+ *   UUID ящика с фронта не нужен.
+ */
 data class SendEmailRequest(
-    val mailboxId: UUID,
+    @field:NotBlank @field:Email val fromEmail: String,
     @field:NotEmpty val to: List<@Email String>,
     val cc: List<String> = emptyList(),
     @field:NotBlank val subject: String,

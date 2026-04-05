@@ -8,6 +8,8 @@ import java.util.UUID
 interface MailboxRepository : JpaRepository<Mailbox, UUID> {
     fun findByEmailAddress(emailAddress: String): Mailbox?
 
+    fun findByEmailAddressIgnoreCase(emailAddress: String): Mailbox?
+
     fun findByStatus(status: MailboxStatus): List<Mailbox>
 
     fun existsByEmailAddress(emailAddress: String): Boolean

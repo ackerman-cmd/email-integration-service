@@ -30,7 +30,7 @@ class OutboundEmailService(
 
     @Transactional
     fun sendNew(
-        mailboxId: UUID,
+        fromEmail: String,
         to: List<String>,
         cc: List<String> = emptyList(),
         subject: String,
@@ -38,10 +38,7 @@ class OutboundEmailService(
         textBody: String?,
         createdByUserId: UUID?,
     ): Message {
-        val mailbox = mailboxRepository
-            .findById(mailboxId)
-            .orElseThrow { IllegalArgumentException("Mailbox not found: $mailboxId") }
-        require(mailbox.isOutboundEnabled) { "Outbound sending is disabled for mailbox: ${mailbox.emailAddress}" }
+        val mailbox = resolveOutboundMailboxByEmail(fromEmail)
 
         val conversation = conversationRepository.save(
             Conversation(mailbox = mailbox, startedAt = Instant.now(), lastMessageAt = Instant.now()),
@@ -280,6 +277,23 @@ class OutboundEmailService(
                 ),
             )
         }
+    }
+
+    private fun resolveOutboundMailboxByEmail(raw: String): Mailbox {
+        val normalized = raw.trim().lowercase()
+        require(normalized.isNotEmpty()) { "From email must not be blank" }
+
+        val mailbox =
+            mailboxRepository.findByEmailAddressIgnoreCase(normalized)
+                ?: throw IllegalArgumentException("Mailbox not found: $normalized")
+
+        require(mailbox.status == MailboxStatus.ACTIVE) {
+            "Mailbox is not active: ${mailbox.emailAddress}"
+        }
+        require(mailbox.isOutboundEnabled) {
+            "Outbound sending is disabled for mailbox: ${mailbox.emailAddress}"
+        }
+        return mailbox
     }
 
     private fun buildForwardHtml(

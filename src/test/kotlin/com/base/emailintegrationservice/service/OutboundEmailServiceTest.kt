@@ -20,6 +20,7 @@ import io.mockk.mockk
 import io.mockk.slot
 import io.mockk.verify
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import java.util.Optional
@@ -71,11 +72,11 @@ class OutboundEmailServiceTest {
 
     @Test
     fun `sendNew creates conversation and sends email via Resend`() {
-        every { mailboxRepository.findById(mailbox.id) } returns Optional.of(mailbox)
+        every { mailboxRepository.findByEmailAddressIgnoreCase("support@test.com") } returns mailbox
         every { resendClient.sendEmail(any(), any()) } returns ResendSendResponse("em_123")
 
         outboundEmailService.sendNew(
-            mailboxId = mailbox.id,
+            fromEmail = "support@test.com",
             to = listOf("user@example.com"),
             subject = "Hello",
             htmlBody = "<p>Hi</p>",
@@ -89,12 +90,12 @@ class OutboundEmailServiceTest {
 
     @Test
     fun `sendNew uses message UUID as idempotency key`() {
-        every { mailboxRepository.findById(mailbox.id) } returns Optional.of(mailbox)
+        every { mailboxRepository.findByEmailAddressIgnoreCase("support@test.com") } returns mailbox
         val idempotencySlot = slot<String>()
         every { resendClient.sendEmail(any(), capture(idempotencySlot)) } returns ResendSendResponse("em_123")
 
         outboundEmailService.sendNew(
-            mailboxId = mailbox.id,
+            fromEmail = "Support@Test.COM",
             to = listOf("user@example.com"),
             subject = "Hello",
             htmlBody = null,
@@ -107,11 +108,11 @@ class OutboundEmailServiceTest {
 
     @Test
     fun `sendNew sets message status to FAILED when Resend throws`() {
-        every { mailboxRepository.findById(mailbox.id) } returns Optional.of(mailbox)
+        every { mailboxRepository.findByEmailAddressIgnoreCase("support@test.com") } returns mailbox
         every { resendClient.sendEmail(any(), any()) } throws ResendApiException("timeout")
 
         outboundEmailService.sendNew(
-            mailboxId = mailbox.id,
+            fromEmail = "support@test.com",
             to = listOf("user@example.com"),
             subject = "Hello",
             htmlBody = null,
@@ -125,11 +126,11 @@ class OutboundEmailServiceTest {
 
     @Test
     fun `sendNew publishes OUTBOUND_REQUESTED then OUTBOUND_SENT on success`() {
-        every { mailboxRepository.findById(mailbox.id) } returns Optional.of(mailbox)
+        every { mailboxRepository.findByEmailAddressIgnoreCase("support@test.com") } returns mailbox
         every { resendClient.sendEmail(any(), any()) } returns ResendSendResponse("em_abc")
 
         outboundEmailService.sendNew(
-            mailboxId = mailbox.id,
+            fromEmail = "support@test.com",
             to = listOf("user@example.com"),
             subject = "Hello",
             htmlBody = null,
@@ -146,11 +147,11 @@ class OutboundEmailServiceTest {
 
     @Test
     fun `sendNew publishes OUTBOUND_FAILED when Resend throws`() {
-        every { mailboxRepository.findById(mailbox.id) } returns Optional.of(mailbox)
+        every { mailboxRepository.findByEmailAddressIgnoreCase("support@test.com") } returns mailbox
         every { resendClient.sendEmail(any(), any()) } throws ResendApiException("error")
 
         outboundEmailService.sendNew(
-            mailboxId = mailbox.id,
+            fromEmail = "support@test.com",
             to = listOf("user@example.com"),
             subject = "Hello",
             htmlBody = null,
@@ -163,6 +164,23 @@ class OutboundEmailServiceTest {
             kafkaEventPublisher.saveToOutbox(capture(topics), any(), any(), any())
         }
         assertThat(topics).containsExactly("email.outbound.requested", "email.outbound.failed")
+    }
+
+    @Test
+    fun `sendNew throws when no mailbox matches from email`() {
+        every { mailboxRepository.findByEmailAddressIgnoreCase("ghost@unknown.com") } returns null
+
+        assertThrows(IllegalArgumentException::class.java) {
+            outboundEmailService.sendNew(
+                fromEmail = "ghost@unknown.com",
+                to = listOf("user@example.com"),
+                subject = "Hello",
+                htmlBody = null,
+                textBody = "Hi",
+                createdByUserId = null,
+            )
+        }
+        verify(exactly = 0) { conversationRepository.save(any()) }
     }
 
     // ── reply ──────────────────────────────────────────────────────────────

@@ -20,7 +20,8 @@ class InternalEmailController(
 ) {
     @Operation(
         summary = "Создать новое письмо",
-        description = "Создаёт новый conversation и отправляет письмо через Resend"
+        description = "Создаёт новый conversation и отправляет письмо через Resend. " +
+            "Ящик задаётся полем fromEmail (адрес как в БД), без UUID."
     )
     @PostMapping("/send")
     @ResponseStatus(HttpStatus.CREATED)
@@ -28,7 +29,7 @@ class InternalEmailController(
         @Valid @RequestBody request: SendEmailRequest
     ): MessageCreatedResponse {
         val message = outboundEmailService.sendNew(
-            mailboxId = request.mailboxId,
+            fromEmail = request.fromEmail,
             to = request.to,
             cc = request.cc,
             subject = request.subject,
