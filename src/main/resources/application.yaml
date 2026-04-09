@@ -1,74 +1,83 @@
 spring:
-  application:
-    name: email-integration-service
-  config:
-    import: "optional:file:./secrets.yaml"
-  datasource:
-    url: jdbc:postgresql://${db.host}:${db.port}/${db.name}
-    username: ${db.username}
-    password: ${db.password}
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    hibernate:
-      ddl-auto: none
-    properties:
-      hibernate:
-        default_schema: email_service
-    open-in-view: false
-  liquibase:
-    change-log: classpath:db/changelog/db.changelog-master.yaml
-    default-schema: email_service
-    liquibase-schema: email_service
-  kafka:
-    bootstrap-servers: ${kafka.bootstrap-servers}
-    producer:
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-      properties:
-        spring.json.add.type.headers: false
-    consumer:
-      group-id: email-integration-service
-      auto-offset-reset: earliest
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: "com.base.emailintegrationservice.kafka.event"
-  jackson:
-    default-property-inclusion: non_null
+    application:
+        name: email-integration-service
+
+    config:
+        import: "optional:file:./secrets.yaml"
+
+    datasource:
+        url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}
+        username: ${POSTGRES_USER}
+        password: ${POSTGRES_PASSWORD}
+        driver-class-name: org.postgresql.Driver
+
+    jpa:
+        hibernate:
+            ddl-auto: none
+        properties:
+            hibernate:
+                default_schema: email_service
+        open-in-view: false
+
+    liquibase:
+        change-log: classpath:db/changelog/db.changelog-master.yaml
+        default-schema: email_service
+        liquibase-schema: email_service
+
+    kafka:
+        bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+        producer:
+            key-serializer: org.apache.kafka.common.serialization.StringSerializer
+            value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+            properties:
+                spring.json.add.type.headers: false
+        consumer:
+            group-id: email-integration-service
+            auto-offset-reset: earliest
+            key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+            value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+            properties:
+                spring.json.trusted.packages: "com.base.emailintegrationservice.kafka.event"
+
+    jackson:
+        default-property-inclusion: non_null
 
 resend:
-  api:
-    key: ${RESEND_API_KEY}
-  base-url: https://api.resend.com
-  webhook-secret: ${RESEND_WEBHOOK_SECRET:}
+    api:
+        key: ${RESEND_API_KEY}
+    base-url: https://api.resend.com
+    webhook-secret: ${RESEND_WEBHOOK_SECRET:}
+
+mail:
+    from: ${MAIL_FROM}
 
 server:
-  port: ${server.port}
+    port: ${SERVER_PORT:8084}
 
 management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,liquibase
-  endpoint:
+    endpoints:
+        web:
+            exposure:
+                include: health,info,metrics,liquibase
+    endpoint:
+        health:
+            show-details: always
+            probes:
+                enabled: true
     health:
-      show-details: always
-      probes:
-        enabled: true
-  health:
-    livenessState:
-      enabled: true
-    readinessState:
-      enabled: true
+        livenessState:
+            enabled: true
+        readinessState:
+            enabled: true
 
 springdoc:
-  api-docs:
-    path: /api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    tags-sorter: alpha
-    operations-sorter: alpha
+    api-docs:
+        path: /api-docs
+    swagger-ui:
+        path: /swagger-ui.html
+        tags-sorter: alpha
+        operations-sorter: alpha
 
 logging:
-  level:
-    liquibase: INFO
+    level:
+        liquibase: INFO
