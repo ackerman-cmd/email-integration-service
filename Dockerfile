@@ -1,5 +1,5 @@
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
-COPY build/libs/user-service-0.0.1-SNAPSHOT.jar app.jar
+COPY build/libs/email-integration-service-0.0.1-SNAPSHOT-plain.jar app.jar
 EXPOSE 8084
 ENTRYPOINT ["java", "-jar", "app.jar"]
