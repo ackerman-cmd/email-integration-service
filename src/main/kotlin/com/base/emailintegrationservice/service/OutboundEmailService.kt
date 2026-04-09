@@ -260,7 +260,7 @@ class OutboundEmailService(
 
             log.info("Outbound email sent: messageId={} providerMessageId={}", message.id, response.id)
         } catch (ex: Exception) {
-            log.error("Failed to send email messageId={}: {}", message.id, ex.message)
+            log.error("Failed to send email messageId={}: [{}] {}", message.id, ex::class.simpleName, ex.message, ex)
             message.status = MessageStatus.FAILED
             messageRepository.save(message)
 

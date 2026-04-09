@@ -38,5 +38,6 @@ out/
 
 ### Kotlin ###
 .kotlin
-
+.claude
 secrets.yaml
+INTEGRATION_IMPLEMENTATION_GUIDE_RU.md

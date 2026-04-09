@@ -41,6 +41,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.liquibase:liquibase-core")
+    implementation("com.resend:resend-java:4.12.0")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
     runtimeOnly("org.postgresql:postgresql")
 
