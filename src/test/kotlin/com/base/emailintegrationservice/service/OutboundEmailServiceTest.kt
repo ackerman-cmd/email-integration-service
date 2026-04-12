@@ -52,6 +52,8 @@ class OutboundEmailServiceTest {
             kafkaEventPublisher,
         )
 
+        every { threadingService.normalizeSubject(any()) } returnsArgument (0)
+
         mailbox = Mailbox(emailAddress = "support@test.com", domain = "test.com", isOutboundEnabled = true)
         conversation = Conversation(mailbox = mailbox)
         savedMessage = Message(

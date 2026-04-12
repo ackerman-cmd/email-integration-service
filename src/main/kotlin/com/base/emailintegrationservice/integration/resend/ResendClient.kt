@@ -1,5 +1,6 @@
 package com.base.emailintegrationservice.integration.resend
 
+import com.base.emailintegrationservice.integration.resend.dto.ResendEmailContent
 import com.base.emailintegrationservice.integration.resend.dto.ResendSendRequest
 import com.base.emailintegrationservice.integration.resend.dto.ResendSendResponse
 import com.resend.Resend
@@ -12,6 +13,24 @@ class ResendClient(
     private val resend: Resend,
 ) {
     private val log = LoggerFactory.getLogger(ResendClient::class.java)
+
+    /**
+     * Retrieves full inbound email content by Resend email ID.
+     * Uses resend.mails().receiving().get() — the inbound-specific API,
+     * NOT resend.emails().get() which only works for outbound sent emails.
+     */
+    fun getInboundEmail(emailId: String): ResendEmailContent? =
+        try {
+            val email = resend.receiving().get(emailId)
+            ResendEmailContent(
+                id = email.id,
+                html = email.html,
+                text = email.text,
+            )
+        } catch (ex: Exception) {
+            log.warn("Failed to retrieve inbound email content emailId={}: {}", emailId, ex.message)
+            null
+        }
 
     /**
      * Sends an email via Resend SDK.

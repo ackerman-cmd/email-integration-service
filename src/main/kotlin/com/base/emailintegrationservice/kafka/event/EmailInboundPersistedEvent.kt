@@ -10,7 +10,9 @@ data class EmailInboundPersistedEvent(
     val caseId: UUID?,
     val fromEmail: String,
     val subject: String?,
+    val textBody: String?,
+    val htmlBody: String?,
     val internetMessageId: String?,
     val isNewConversation: Boolean,
-    val receivedAt: Instant
+    val receivedAt: Instant,
 )

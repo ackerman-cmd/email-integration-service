@@ -1,0 +1,211 @@
+<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><title>DFD Improved</title>
+<style>body{margin:0;padding:0;background:#fff;}</style>
+</head><body>
+<svg width="1800" height="1100" viewBox="0 0 1800 1100" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1,1 L9,5 L1,9 Z" fill="#2563eb"/></marker>
+  <marker id="a-violet" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1,1 L9,5 L1,9 Z" fill="#6d28d9"/></marker>
+  <marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1,1 L9,5 L1,9 Z" fill="#d97706"/></marker>
+  <marker id="a-pink" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1,1 L9,5 L1,9 Z" fill="#be185d"/></marker>
+  <marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1,1 L9,5 L1,9 Z" fill="#16a34a"/></marker>
+  <marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1,1 L9,5 L1,9 Z" fill="#6b7280"/></marker>
+  <marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M1,1 L9,5 L1,9 Z" fill="#c2410c"/></marker>
+</defs>
+<rect width="100%" height="100%" fill="white"/>
+
+<!-- Title -->
+<text x="900" y="38" text-anchor="middle" font-family="Arial" font-size="26" font-weight="700" fill="#111827">Диаграмма потоков данных и технологический стек</text>
+<text x="900" y="64" text-anchor="middle" font-family="Arial" font-size="14" font-weight="500" fill="#6b7280">Экосистема сервисов автоматизации клиентских коммуникаций и поддержки</text>
+
+<!-- ===== ROW 1: External Clients (y=110) ===== -->
+<ellipse cx="520" cy="130" rx="120" ry="42" fill="#eef6ff" stroke="#2563eb" stroke-width="2"/>
+<text x="520" y="124" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#1d4ed8">Клиент</text>
+<text x="520" y="146" text-anchor="middle" font-family="Arial" font-size="12" fill="#2563eb">Email-канал</text>
+
+<ellipse cx="900" cy="130" rx="120" ry="42" fill="#eef6ff" stroke="#2563eb" stroke-width="2"/>
+<text x="900" y="124" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#1d4ed8">Клиент</text>
+<text x="900" y="146" text-anchor="middle" font-family="Arial" font-size="12" fill="#2563eb">Telegram-бот</text>
+
+<!-- ===== ROW 2: Ingress Services (y=250) ===== -->
+<rect x="400" y="220" width="240" height="80" rx="16" ry="16" fill="#ede9fe" stroke="#6d28d9" stroke-width="2"/>
+<text x="520" y="250" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#5b21b6">Resend / Email ingress</text>
+<text x="520" y="272" text-anchor="middle" font-family="Arial" font-size="12" fill="#6d28d9">Приём письма по webhook</text>
+<text x="520" y="290" text-anchor="middle" font-family="Arial" font-size="12" fill="#6d28d9">и отправка исходящих писем</text>
+
+<rect x="780" y="220" width="240" height="80" rx="16" ry="16" fill="#ede9fe" stroke="#6d28d9" stroke-width="2"/>
+<text x="900" y="250" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#5b21b6">Telegram webhook</text>
+<text x="900" y="272" text-anchor="middle" font-family="Arial" font-size="12" fill="#6d28d9">Клиент пишет боту,</text>
+<text x="900" y="290" text-anchor="middle" font-family="Arial" font-size="12" fill="#6d28d9">webhook инициирует обращение</text>
+
+<!-- ===== ROW 3: Email Service (y=380) ===== -->
+<rect x="580" y="360" width="260" height="80" rx="16" ry="16" fill="#ede9fe" stroke="#6d28d9" stroke-width="2"/>
+<text x="710" y="390" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#5b21b6">Email Service</text>
+<text x="710" y="412" text-anchor="middle" font-family="Arial" font-size="12" fill="#6d28d9">Создание письма и переписки</text>
+<text x="710" y="430" text-anchor="middle" font-family="Arial" font-size="12" fill="#6d28d9">Публикация события в Kafka</text>
+
+<!-- ===== ROW 4: Kafka (y=510) ===== -->
+<rect x="580" y="500" width="260" height="70" rx="16" ry="16" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+<text x="710" y="526" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#b45309">Apache Kafka</text>
+<text x="710" y="548" text-anchor="middle" font-family="Arial" font-size="12" fill="#d97706">tickets.created, user.sync и др.</text>
+
+<!-- ===== ROW 5: ARM-Support + Side Services (y=650) ===== -->
+<!-- ARM-Support (center) -->
+<rect x="490" y="630" width="440" height="110" rx="18" ry="18" fill="#fce7f3" stroke="#be185d" stroke-width="2.5"/>
+<text x="710" y="660" text-anchor="middle" font-family="Arial" font-size="17" font-weight="700" fill="#9d174d">ARM-Support Service</text>
+<text x="710" y="684" text-anchor="middle" font-family="Arial" font-size="12" fill="#be185d">Создание и ведение обращений</text>
+<text x="710" y="702" text-anchor="middle" font-family="Arial" font-size="12" fill="#be185d">Назначение операторов, групп и skill-групп</text>
+<text x="710" y="720" text-anchor="middle" font-family="Arial" font-size="12" fill="#be185d">Статусы, переписка, закрытие, спам</text>
+
+<!-- User Service (left of ARM) -->
+<rect x="120" y="640" width="180" height="80" rx="16" ry="16" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+<text x="210" y="670" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#15803d">User Service</text>
+<text x="210" y="692" text-anchor="middle" font-family="Arial" font-size="12" fill="#16a34a">OAuth2, роли,</text>
+<text x="210" y="708" text-anchor="middle" font-family="Arial" font-size="12" fill="#16a34a">доступы, сессии</text>
+
+<!-- LLM Service (right of ARM) -->
+<rect x="1120" y="640" width="180" height="80" rx="16" ry="16" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+<text x="1210" y="670" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#15803d">LLM Service</text>
+<text x="1210" y="692" text-anchor="middle" font-family="Arial" font-size="12" fill="#16a34a">Тематика,</text>
+<text x="1210" y="708" text-anchor="middle" font-family="Arial" font-size="12" fill="#16a34a">приоритет, SLA</text>
+
+<!-- ===== ROW 6: SLA, Notification, Report (right column, y=800) ===== -->
+<rect x="1120" y="780" width="180" height="70" rx="16" ry="16" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+<text x="1210" y="808" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" fill="#15803d">SLA Monitoring</text>
+<text x="1210" y="828" text-anchor="middle" font-family="Arial" font-size="12" fill="#16a34a">Контроль сроков SLA</text>
+
+<rect x="1360" y="780" width="200" height="70" rx="16" ry="16" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+<text x="1460" y="808" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" fill="#15803d">Notification Service</text>
+<text x="1460" y="828" text-anchor="middle" font-family="Arial" font-size="12" fill="#16a34a">Верификация, уведомления</text>
+
+<rect x="1600" y="780" width="170" height="70" rx="16" ry="16" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+<text x="1685" y="808" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" fill="#15803d">Report Service</text>
+<text x="1685" y="828" text-anchor="middle" font-family="Arial" font-size="12" fill="#16a34a">PDF-отчёты</text>
+
+<!-- ===== LEFT: Operator + Admin (y=800) ===== -->
+<rect x="60" y="790" width="200" height="70" rx="16" ry="16" fill="#f9fafb" stroke="#6b7280" stroke-width="2"/>
+<text x="160" y="818" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#374151">Оператор</text>
+<text x="160" y="838" text-anchor="middle" font-family="Arial" font-size="12" fill="#6b7280">Работает с обращениями</text>
+
+<rect x="60" y="890" width="200" height="70" rx="16" ry="16" fill="#f9fafb" stroke="#6b7280" stroke-width="2"/>
+<text x="160" y="916" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" fill="#374151">Администратор</text>
+<text x="160" y="938" text-anchor="middle" font-family="Arial" font-size="12" fill="#6b7280">Управление и отчёты</text>
+
+<!-- Client responses (left, between operator and clients) -->
+<ellipse cx="160" cy="430" rx="110" ry="36" fill="#fdf2f8" stroke="#be185d" stroke-width="2"/>
+<text x="160" y="426" text-anchor="middle" font-family="Arial" font-size="14" font-weight="700" fill="#9d174d">Клиент</text>
+<text x="160" y="446" text-anchor="middle" font-family="Arial" font-size="12" fill="#be185d">Ответы и статусы</text>
+
+<!-- ===== BOTTOM: Databases (y=980) ===== -->
+<rect x="320" y="940" width="200" height="80" rx="16" ry="16" fill="#fff7ed" stroke="#c2410c" stroke-width="2"/>
+<text x="420" y="966" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#9a3412">PostgreSQL</text>
+<text x="420" y="988" text-anchor="middle" font-family="Arial" font-size="12" fill="#c2410c">User Service DB</text>
+<text x="420" y="1006" text-anchor="middle" font-family="Arial" font-size="12" fill="#c2410c">пользователи и сессии</text>
+
+<rect x="610" y="940" width="200" height="80" rx="16" ry="16" fill="#fff7ed" stroke="#c2410c" stroke-width="2"/>
+<text x="710" y="966" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#9a3412">PostgreSQL</text>
+<text x="710" y="988" text-anchor="middle" font-family="Arial" font-size="12" fill="#c2410c">ARM-Support DB</text>
+<text x="710" y="1006" text-anchor="middle" font-family="Arial" font-size="12" fill="#c2410c">обращения и статусы</text>
+
+<rect x="900" y="940" width="200" height="80" rx="16" ry="16" fill="#fff7ed" stroke="#c2410c" stroke-width="2"/>
+<text x="1000" y="966" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#9a3412">PostgreSQL</text>
+<text x="1000" y="988" text-anchor="middle" font-family="Arial" font-size="12" fill="#c2410c">Email Service DB</text>
+<text x="1000" y="1006" text-anchor="middle" font-family="Arial" font-size="12" fill="#c2410c">письма и thread id</text>
+
+<!-- Kubernetes box -->
+<rect x="1200" y="920" width="340" height="80" rx="16" ry="16" fill="#eff6ff" stroke="#0284c7" stroke-width="2"/>
+<text x="1370" y="950" text-anchor="middle" font-family="Arial" font-size="15" font-weight="700" fill="#0369a1">Minikube + Ingress + CloudPub</text>
+<text x="1370" y="972" text-anchor="middle" font-family="Arial" font-size="12" fill="#0284c7">Контейнерный деплой сервисов</text>
+<text x="1370" y="990" text-anchor="middle" font-family="Arial" font-size="12" fill="#0284c7">внешний доступ для демонстрации</text>
+
+<!-- Tech stack bar -->
+<rect x="60" y="1050" width="1710" height="40" rx="12" ry="12" fill="#f3f4f6" stroke="#d1d5db" stroke-width="1.5"/>
+<text x="900" y="1076" text-anchor="middle" font-family="Arial" font-size="14" font-weight="600" fill="#374151">Стек: Kotlin / Java  •  Spring Boot  •  Spring Authorization Server  •  PostgreSQL  •  Apache Kafka  •  Resend  •  Telegram Bot API  •  LLM API  •  Kubernetes  •  Ingress  •  CloudPub</text>
+
+<!-- Kubernetes deploy boundary -->
+<rect x="370" y="200" width="890" height="570" rx="22" ry="22" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="8 6"/>
+<text x="1230" y="222" text-anchor="end" font-family="Arial" font-size="11" font-weight="600" fill="#94a3b8">Контур развертывания в Kubernetes</text>
+
+<!-- Section labels -->
+<text x="70" y="112" font-family="Arial" font-size="11" font-weight="700" fill="#9ca3af">ВНЕШНИЕ СУЩНОСТИ</text>
+<text x="1130" y="632" font-family="Arial" font-size="11" font-weight="700" fill="#9ca3af">ВСПОМОГАТЕЛЬНЫЕ СЕРВИСЫ</text>
+<text x="330" y="932" font-family="Arial" font-size="11" font-weight="700" fill="#9ca3af">ХРАНИЛИЩА</text>
+
+<!-- ============================= -->
+<!-- ARROWS / FLOWS               -->
+<!-- ============================= -->
+
+<!-- 1. Клиент Email → Resend -->
+<line x1="520" y1="172" x2="520" y2="218" stroke="#2563eb" stroke-width="2.5" marker-end="url(#a-blue)"/>
+<text x="535" y="200" font-family="Arial" font-size="11" font-weight="500" fill="#2563eb">входящее письмо</text>
+
+<!-- 2. Клиент Telegram → Telegram webhook -->
+<line x1="900" y1="172" x2="900" y2="218" stroke="#2563eb" stroke-width="2.5" marker-end="url(#a-blue)"/>
+<text x="915" y="200" font-family="Arial" font-size="11" font-weight="500" fill="#2563eb">сообщение в бота</text>
+
+<!-- 3. Resend → Email Service -->
+<path d="M 580 300 L 650 300 L 650 358" stroke="#6d28d9" stroke-width="2.5" fill="none" marker-end="url(#a-violet)"/>
+
+<!-- 4. Telegram webhook → Email Service -->
+<path d="M 840 300 L 770 300 L 770 358" stroke="#6d28d9" stroke-width="2.5" fill="none" marker-end="url(#a-violet)"/>
+<text x="710" y="330" text-anchor="middle" font-family="Arial" font-size="11" font-weight="500" fill="#6d28d9">создание обращения</text>
+
+<!-- 5. Email Service → Kafka -->
+<line x1="710" y1="440" x2="710" y2="498" stroke="#6d28d9" stroke-width="2.5" marker-end="url(#a-violet)"/>
+<text x="725" y="476" font-family="Arial" font-size="11" font-weight="500" fill="#6d28d9">событие</text>
+
+<!-- 6. Kafka → ARM-Support -->
+<line x1="710" y1="570" x2="710" y2="628" stroke="#d97706" stroke-width="2.5" marker-end="url(#a-orange)"/>
+<text x="725" y="604" font-family="Arial" font-size="11" font-weight="500" fill="#a16207">tickets.created</text>
+
+<!-- 7. User Service ↔ ARM-Support (user.sync via Kafka) -->
+<line x1="300" y1="680" x2="488" y2="680" stroke="#16a34a" stroke-width="2.5" marker-end="url(#a-green)"/>
+<text x="395" y="672" text-anchor="middle" font-family="Arial" font-size="11" font-weight="500" fill="#15803d">user.sync</text>
+
+<!-- 8. ARM-Support → LLM Service -->
+<line x1="930" y1="680" x2="1118" y2="680" stroke="#16a34a" stroke-width="2.5" marker-end="url(#a-green)"/>
+<text x="1024" y="672" text-anchor="middle" font-family="Arial" font-size="11" font-weight="500" fill="#15803d">API тематика/приоритет</text>
+
+<!-- 9. ARM-Support → SLA Monitoring -->
+<path d="M 930 710 L 1060 710 L 1060 815 L 1118 815" stroke="#16a34a" stroke-width="2.5" fill="none" marker-end="url(#a-green)"/>
+<text x="1070" y="766" font-family="Arial" font-size="11" font-weight="500" fill="#15803d">SLA-события</text>
+
+<!-- 10. ARM-Support → Notification Service -->
+<path d="M 930 720 L 1040 720 L 1040 815 L 1358 815" stroke="#16a34a" stroke-width="2.5" fill="none" stroke-dasharray="6 4" marker-end="url(#a-green)"/>
+<text x="1200" y="746" font-family="Arial" font-size="11" font-weight="500" fill="#15803d">уведомления</text>
+
+<!-- 11. ARM-Support → Report Service -->
+<path d="M 930 730 L 1020 730 L 1020 815 L 1598 815" stroke="#16a34a" stroke-width="2.5" fill="none" stroke-dasharray="6 4" marker-end="url(#a-green)"/>
+<text x="1400" y="746" font-family="Arial" font-size="11" font-weight="500" fill="#15803d">метрики / выгрузки</text>
+
+<!-- 12. ARM-Support → Клиент (ответы) -->
+<path d="M 490 685 L 360 685 L 360 435 L 272 435" stroke="#be185d" stroke-width="2.5" fill="none" marker-end="url(#a-pink)"/>
+<text x="375" y="560" font-family="Arial" font-size="11" font-weight="500" fill="#9d174d">ответы и статусы</text>
+
+<!-- 13. Оператор → ARM-Support -->
+<path d="M 260 815 L 500 815 L 500 742" stroke="#6b7280" stroke-width="2.5" fill="none" marker-end="url(#a-gray)"/>
+<text x="380" y="807" text-anchor="middle" font-family="Arial" font-size="11" font-weight="500" fill="#6b7280">работа с обращениями</text>
+
+<!-- 14. Администратор → ARM-Support -->
+<path d="M 260 920 L 540 920 L 540 742" stroke="#6b7280" stroke-width="2.5" fill="none" marker-end="url(#a-gray)"/>
+<text x="400" y="912" text-anchor="middle" font-family="Arial" font-size="11" font-weight="500" fill="#6b7280">управление и отчёты</text>
+
+<!-- 15. User Service → PG User DB -->
+<line x1="210" y1="720" x2="210" y2="880" stroke="#c2410c" stroke-width="2" stroke-dasharray="5 4"/>
+<path d="M 210 880 L 350 960 L 318 960" stroke="#c2410c" stroke-width="2" fill="none"/>
+<text x="220" y="806" font-family="Arial" font-size="11" font-weight="500" fill="#9a3412">хранение</text>
+
+<!-- 16. ARM-Support → PG ARM DB -->
+<line x1="710" y1="740" x2="710" y2="938" stroke="#c2410c" stroke-width="2.5" fill="none"/>
+<text x="725" y="860" font-family="Arial" font-size="11" font-weight="500" fill="#9a3412">обращения</text>
+
+<!-- 17. Email Service → PG Email DB -->
+<path d="M 840 400 L 1000 400 L 1000 938" stroke="#c2410c" stroke-width="2.5" fill="none"/>
+<text x="1015" y="860" font-family="Arial" font-size="11" font-weight="500" fill="#9a3412">письма / thread id</text>
+
+<!-- Narrative -->
+<rect x="60" y="870" width="880" height="46" rx="12" ry="12" fill="#fafaf9" stroke="#d6d3d1" stroke-width="1.5"/>
+<text x="78" y="892" font-family="Arial" font-size="12" font-weight="500" fill="#44403c">Клиент пишет на email или в Telegram-бота → канал принимает сообщение → сервис публикует</text>
+<text x="78" y="908" font-family="Arial" font-size="12" font-weight="500" fill="#44403c">событие → ARM-Support создаёт обращение → оператор ведёт переписку и закрывает обращение.</text>
+
+</svg>
+</body></html>

@@ -41,7 +41,12 @@ class OutboundEmailService(
         val mailbox = resolveOutboundMailboxByEmail(fromEmail)
 
         val conversation = conversationRepository.save(
-            Conversation(mailbox = mailbox, startedAt = Instant.now(), lastMessageAt = Instant.now()),
+            Conversation(
+                mailbox = mailbox,
+                subjectNormalized = threadingService.normalizeSubject(subject),
+                startedAt = Instant.now(),
+                lastMessageAt = Instant.now(),
+            ),
         )
 
         val message = createOutboundMessage(
@@ -219,9 +224,17 @@ class OutboundEmailService(
         references: String?,
     ) {
         message.status = MessageStatus.SENDING
+
+        // Generate a stable RFC 2822 Message-ID so ThreadingService can match client replies.
+        // Format: <{message-uuid}@{mailbox-domain}>
+        val domain = mailbox.emailAddress.substringAfter("@").ifBlank { "mail.local" }
+        val outboundMessageId = "${message.id}@$domain"
+        message.internetMessageId = outboundMessageId
+
         messageRepository.save(message)
 
         val headers = mutableMapOf<String, String>()
+        headers["Message-ID"] = "<$outboundMessageId>"
         if (!inReplyTo.isNullOrBlank()) headers["In-Reply-To"] = "<$inReplyTo>"
         if (!references.isNullOrBlank()) headers["References"] = references
 

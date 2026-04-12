@@ -10,6 +10,7 @@ import com.base.emailintegrationservice.domain.enums.MessageDirection
 import com.base.emailintegrationservice.domain.enums.MessageStatus
 import com.base.emailintegrationservice.domain.enums.ProviderEventStatus
 import com.base.emailintegrationservice.domain.enums.RecipientType
+import com.base.emailintegrationservice.integration.resend.ResendClient
 import com.base.emailintegrationservice.kafka.KafkaEventPublisher
 import com.base.emailintegrationservice.kafka.event.EmailConversationCreatedEvent
 import com.base.emailintegrationservice.kafka.event.EmailConversationMatchedEvent
@@ -39,6 +40,7 @@ class ResendWebhookTransactionalProcessor(
     private val messageRecipientRepository: MessageRecipientRepository,
     private val messageAttachmentRepository: MessageAttachmentRepository,
     private val threadingService: ThreadingService,
+    private val resendClient: ResendClient,
     private val kafkaEventPublisher: KafkaEventPublisher,
     private val objectMapper: ObjectMapper,
 ) {
@@ -82,13 +84,38 @@ class ResendWebhookTransactionalProcessor(
             return
         }
 
+        // Resend does not include headers[] or body in email.received webhooks.
+        // message_id is provided as a top-level data field (RFC 2822 Message-ID of the incoming email).
+        // In-Reply-To / References are unavailable — threading falls back to subject matching.
         val headers = data.headers ?: emptyList()
-        val internetMessageId = headers.firstOrNull { it.name.equals("Message-ID", ignoreCase = true) }?.value
+        val internetMessageId = data.messageId
+            ?: headers.firstOrNull { it.name.equals("Message-ID", ignoreCase = true) }?.value
         val inReplyTo = headers.firstOrNull { it.name.equals("In-Reply-To", ignoreCase = true) }?.value
         val referencesRaw = headers.firstOrNull { it.name.equals("References", ignoreCase = true) }?.value
 
-        val threadResult = threadingService.resolveConversation(inReplyTo, referencesRaw, internetMessageId)
+        log.info(
+            "Inbound threading: emailId={} messageId={} inReplyTo={} subject=\"{}\"",
+            emailId,
+            internetMessageId,
+            inReplyTo,
+            data.subject,
+        )
+
+        val threadResult = threadingService.resolveConversation(
+            inReplyTo = inReplyTo,
+            referencesRaw = referencesRaw,
+            internetMessageId = internetMessageId,
+            mailboxId = mailbox.id,
+            incomingSubject = data.subject,
+        )
         val isNewConversation = threadResult.conversation == null
+        log.info(
+            "Inbound threading result: emailId={} isNew={} matchedBy={} conversationId={}",
+            emailId,
+            isNewConversation,
+            threadResult.matchedBy,
+            threadResult.conversation?.id,
+        )
 
         val conversation = threadResult.conversation ?: conversationRepository.save(
             Conversation(
@@ -104,6 +131,10 @@ class ResendWebhookTransactionalProcessor(
             conversationRepository.save(conversation)
         }
 
+        // Resend does not include body in email.received webhooks.
+        // Fetch full content via mails.receiving.get() — the inbound-specific API.
+        val inboundContent = resendClient.getInboundEmail(emailId)
+
         val rawHeadersJson = objectMapper.writeValueAsString(headers)
 
         val message = messageRepository.save(
@@ -118,8 +149,8 @@ class ResendWebhookTransactionalProcessor(
                 subject = data.subject,
                 fromEmail = data.from ?: "unknown",
                 replyToEmail = data.replyTo?.firstOrNull(),
-                textBody = data.text,
-                htmlBody = data.html,
+                textBody = inboundContent?.text ?: data.text,
+                htmlBody = inboundContent?.html ?: data.html,
                 rawHeadersJson = rawHeadersJson,
                 receivedAt = Instant.now(),
             ),
@@ -189,6 +220,8 @@ class ResendWebhookTransactionalProcessor(
                 caseId = conversation.caseId,
                 fromEmail = data.from ?: "unknown",
                 subject = data.subject,
+                textBody = message.textBody,
+                htmlBody = message.htmlBody,
                 internetMessageId = message.internetMessageId,
                 isNewConversation = isNewConversation,
                 receivedAt = Instant.now(),
@@ -289,11 +322,5 @@ class ResendWebhookTransactionalProcessor(
         log.info("Delivery event processed: type={} emailId={} newStatus={}", payload.type, emailId, newStatus)
     }
 
-    private fun normalizeSubject(subject: String?): String? =
-        subject
-            ?.removePrefix("Re: ")
-            ?.removePrefix("RE: ")
-            ?.removePrefix("Fwd: ")
-            ?.removePrefix("FWD: ")
-            ?.trim()
+    private fun normalizeSubject(subject: String?): String? = threadingService.normalizeSubject(subject)
 }

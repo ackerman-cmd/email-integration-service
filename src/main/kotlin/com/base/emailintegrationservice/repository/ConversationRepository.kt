@@ -28,4 +28,23 @@ interface ConversationRepository : JpaRepository<Conversation, UUID> {
         """
     )
     fun findByMessageInternetMessageId(internetMessageId: String): Conversation?
+
+    /**
+     * Subject-fallback threading: most recent OPEN conversation in the mailbox
+     * whose normalised subject matches the incoming email (after stripping Re:/Fwd: prefixes).
+     * Used when the client's mail client does not send In-Reply-To / References headers.
+     */
+    @Query(
+        """
+        SELECT c FROM Conversation c
+        WHERE c.mailbox.id = :mailboxId
+          AND c.subjectNormalized = :subjectNormalized
+          AND c.status = 'OPEN'
+        ORDER BY c.lastMessageAt DESC
+        """
+    )
+    fun findMostRecentOpenByMailboxAndSubject(
+        mailboxId: java.util.UUID,
+        subjectNormalized: String,
+    ): Conversation?
 }
