@@ -4,6 +4,7 @@ import com.base.emailintegrationservice.integration.resend.dto.ResendEmailConten
 import com.base.emailintegrationservice.integration.resend.dto.ResendSendRequest
 import com.base.emailintegrationservice.integration.resend.dto.ResendSendResponse
 import com.resend.Resend
+import com.resend.services.emails.model.Attachment
 import com.resend.services.emails.model.CreateEmailOptions
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
@@ -62,6 +63,18 @@ class ResendClient(
                     request.cc?.let { cc(it) }
                     request.replyTo?.let { replyTo(it) }
                     request.headers?.let { headers(it) }
+                    request.attachments?.takeIf { it.isNotEmpty() }?.let { reqAttachments ->
+                        attachments(
+                            reqAttachments.map { a ->
+                                Attachment
+                                    .builder()
+                                    .fileName(a.filename)
+                                    .content(a.content)
+                                    .apply { a.contentType?.let { contentType(it) } }
+                                    .build()
+                            },
+                        )
+                    }
                 }.build()
 
         val response =

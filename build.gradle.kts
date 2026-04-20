@@ -43,6 +43,8 @@ dependencies {
     implementation("org.liquibase:liquibase-core")
     implementation("com.resend:resend-java:4.12.0")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+    implementation("software.amazon.awssdk:s3:2.29.52")
+    implementation("software.amazon.awssdk:url-connection-client:2.29.52")
     runtimeOnly("org.postgresql:postgresql")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test") {

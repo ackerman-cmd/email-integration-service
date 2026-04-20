@@ -4,6 +4,7 @@ import com.base.emailintegrationservice.config.KafkaTopics
 import com.base.emailintegrationservice.domain.entity.*
 import com.base.emailintegrationservice.domain.enums.*
 import com.base.emailintegrationservice.integration.resend.ResendClient
+import com.base.emailintegrationservice.integration.resend.dto.ResendAttachmentRequest
 import com.base.emailintegrationservice.integration.resend.dto.ResendSendRequest
 import com.base.emailintegrationservice.kafka.KafkaEventPublisher
 import com.base.emailintegrationservice.kafka.event.EmailOutboundFailedEvent
@@ -13,7 +14,9 @@ import com.base.emailintegrationservice.repository.*
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.multipart.MultipartFile
 import java.time.Instant
+import java.util.Base64
 import java.util.UUID
 
 @Service
@@ -22,8 +25,10 @@ class OutboundEmailService(
     private val conversationRepository: ConversationRepository,
     private val messageRepository: MessageRepository,
     private val messageRecipientRepository: MessageRecipientRepository,
+    private val messageAttachmentRepository: MessageAttachmentRepository,
     private val threadingService: ThreadingService,
     private val resendClient: ResendClient,
+    private val s3StorageService: S3StorageService,
     private val kafkaEventPublisher: KafkaEventPublisher,
 ) {
     private val log = LoggerFactory.getLogger(OutboundEmailService::class.java)
@@ -37,6 +42,7 @@ class OutboundEmailService(
         htmlBody: String?,
         textBody: String?,
         createdByUserId: UUID?,
+        files: List<MultipartFile> = emptyList(),
     ): Message {
         val mailbox = resolveOutboundMailboxByEmail(fromEmail)
 
@@ -60,6 +66,8 @@ class OutboundEmailService(
             createdByUserId = createdByUserId,
         )
 
+        val attachments = uploadAttachments(message, files)
+
         kafkaEventPublisher.saveToOutbox(
             topic = KafkaTopics.EMAIL_OUTBOUND_REQUESTED,
             aggregateType = "message",
@@ -74,7 +82,7 @@ class OutboundEmailService(
             ),
         )
 
-        sendViaResend(message, conversation, mailbox, to, cc, subject, null, null)
+        sendViaResend(message, conversation, mailbox, to, cc, subject, null, null, attachments)
         return message
     }
 
@@ -87,6 +95,7 @@ class OutboundEmailService(
         htmlBody: String?,
         textBody: String?,
         createdByUserId: UUID?,
+        files: List<MultipartFile> = emptyList(),
     ): Message {
         val conversation = conversationRepository
             .findById(conversationId)
@@ -116,6 +125,8 @@ class OutboundEmailService(
         conversation.lastMessageAt = Instant.now()
         conversationRepository.save(conversation)
 
+        val attachments = uploadAttachments(message, files)
+
         kafkaEventPublisher.saveToOutbox(
             topic = KafkaTopics.EMAIL_OUTBOUND_REQUESTED,
             aggregateType = "message",
@@ -130,7 +141,7 @@ class OutboundEmailService(
             ),
         )
 
-        sendViaResend(message, conversation, mailbox, to, cc, subject, inReplyTo, references)
+        sendViaResend(message, conversation, mailbox, to, cc, subject, inReplyTo, references, attachments)
         return message
     }
 
@@ -178,7 +189,7 @@ class OutboundEmailService(
             ),
         )
 
-        sendViaResend(fwdMessage, conversation, mailbox, to, emptyList(), fwdSubject, null, null)
+        sendViaResend(fwdMessage, conversation, mailbox, to, emptyList(), fwdSubject, null, null, emptyList())
         return fwdMessage
     }
 
@@ -222,6 +233,7 @@ class OutboundEmailService(
         subject: String,
         inReplyTo: String?,
         references: String?,
+        attachments: List<ResendAttachmentRequest> = emptyList(),
     ) {
         message.status = MessageStatus.SENDING
 
@@ -247,6 +259,7 @@ class OutboundEmailService(
             text = message.textBody,
             replyTo = listOf(mailbox.emailAddress),
             headers = headers.ifEmpty { null },
+            attachments = attachments.ifEmpty { null },
         )
 
         try {
@@ -288,6 +301,35 @@ class OutboundEmailService(
                     reason = ex.message ?: "unknown",
                     failedAt = Instant.now(),
                 ),
+            )
+        }
+    }
+
+    private fun uploadAttachments(
+        message: Message,
+        files: List<MultipartFile>,
+    ): List<ResendAttachmentRequest> {
+        if (files.isEmpty()) return emptyList()
+        return files.map { file ->
+            val fileName = file.originalFilename ?: file.name
+            val contentType = file.contentType ?: "application/octet-stream"
+            val bytes = file.bytes
+            val s3Key = "outbound/${message.conversation.id}/${message.id}/$fileName"
+            val s3Url = s3StorageService.upload(s3Key, bytes, contentType)
+            messageAttachmentRepository.save(
+                MessageAttachment(
+                    message = message,
+                    fileName = fileName,
+                    contentType = contentType,
+                    sizeBytes = bytes.size.toLong(),
+                    storageKey = s3Key,
+                ),
+            )
+            log.debug("Uploaded email attachment to S3: key={} url={}", s3Key, s3Url)
+            ResendAttachmentRequest(
+                filename = fileName,
+                content = Base64.getEncoder().encodeToString(bytes),
+                contentType = contentType,
             )
         }
     }

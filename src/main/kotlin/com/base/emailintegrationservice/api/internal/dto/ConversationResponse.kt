@@ -55,12 +55,14 @@ data class MessageResponse(
     val sentAt: Instant?,
     val receivedAt: Instant?,
     val createdAt: Instant,
-    val recipients: List<RecipientResponse> = emptyList()
+    val recipients: List<RecipientResponse> = emptyList(),
+    val attachments: List<AttachmentResponse> = emptyList(),
 ) {
     companion object {
         fun from(
             message: Message,
-            recipients: List<MessageRecipient> = emptyList()
+            recipients: List<MessageRecipient> = emptyList(),
+            attachments: List<AttachmentResponse> = emptyList(),
         ) = MessageResponse(
             id = message.id,
             conversationId = message.conversation.id,
@@ -78,7 +80,8 @@ data class MessageResponse(
             sentAt = message.sentAt,
             receivedAt = message.receivedAt,
             createdAt = message.createdAt,
-            recipients = recipients.map { RecipientResponse.from(it) }
+            recipients = recipients.map { RecipientResponse.from(it) },
+            attachments = attachments,
         )
     }
 }
@@ -104,20 +107,24 @@ data class AttachmentResponse(
     val fileName: String,
     val contentType: String,
     val sizeBytes: Long?,
+    val storageUrl: String?,
     val isInline: Boolean,
     val contentId: String?
 ) {
     companion object {
-        fun from(attachment: MessageAttachment) =
-            AttachmentResponse(
-                id = attachment.id,
-                messageId = attachment.message.id,
-                fileName = attachment.fileName,
-                contentType = attachment.contentType,
-                sizeBytes = attachment.sizeBytes,
-                isInline = attachment.isInline,
-                contentId = attachment.contentId
-            )
+        fun from(
+            attachment: MessageAttachment,
+            storageUrl: String? = null,
+        ) = AttachmentResponse(
+            id = attachment.id,
+            messageId = attachment.message.id,
+            fileName = attachment.fileName,
+            contentType = attachment.contentType,
+            sizeBytes = attachment.sizeBytes,
+            storageUrl = storageUrl,
+            isInline = attachment.isInline,
+            contentId = attachment.contentId,
+        )
     }
 }
 

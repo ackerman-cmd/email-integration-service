@@ -13,6 +13,7 @@ import com.base.emailintegrationservice.integration.resend.dto.ResendSendRespons
 import com.base.emailintegrationservice.kafka.KafkaEventPublisher
 import com.base.emailintegrationservice.repository.ConversationRepository
 import com.base.emailintegrationservice.repository.MailboxRepository
+import com.base.emailintegrationservice.repository.MessageAttachmentRepository
 import com.base.emailintegrationservice.repository.MessageRecipientRepository
 import com.base.emailintegrationservice.repository.MessageRepository
 import io.mockk.every
@@ -33,6 +34,8 @@ class OutboundEmailServiceTest {
     private val threadingService: ThreadingService = mockk()
     private val resendClient: ResendClient = mockk()
     private val kafkaEventPublisher: KafkaEventPublisher = mockk()
+    private val messageAttachmentRepository: MessageAttachmentRepository = mockk()
+    private val s3StorageService: S3StorageService = mockk()
 
     private lateinit var outboundEmailService: OutboundEmailService
 
@@ -47,8 +50,10 @@ class OutboundEmailServiceTest {
             conversationRepository,
             messageRepository,
             messageRecipientRepository,
+            messageAttachmentRepository,
             threadingService,
             resendClient,
+            s3StorageService,
             kafkaEventPublisher,
         )
 

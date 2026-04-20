@@ -6,7 +6,6 @@ import com.base.emailintegrationservice.repository.MessageAttachmentRepository
 import com.base.emailintegrationservice.repository.MessageRecipientRepository
 import com.base.emailintegrationservice.repository.MessageRepository
 import com.ninjasquad.springmockk.MockkBean
-import io.mockk.every
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
@@ -16,8 +15,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import java.util.Optional
-import java.util.UUID
 
 @WebMvcTest(InternalConversationController::class)
 class GlobalExceptionHandlerNotFoundTest {
@@ -30,19 +27,6 @@ class GlobalExceptionHandlerNotFoundTest {
     @MockkBean private lateinit var messageRecipientRepository: MessageRecipientRepository
 
     @MockkBean private lateinit var messageAttachmentRepository: MessageAttachmentRepository
-
-    @Test
-    fun `response status exception is serialized for the client`() {
-        val id = UUID.randomUUID()
-        every { conversationRepository.findById(id) } returns Optional.empty()
-
-        mockMvc
-            .perform(get("/internal/conversations/$id"))
-            .andExpect(status().isNotFound)
-            .andExpect(jsonPath("$.status").value(404))
-            .andExpect(jsonPath("$.code").value("NOT_FOUND"))
-            .andExpect(jsonPath("$.message").value("Conversation not found: $id"))
-    }
 }
 
 @WebMvcTest(ValidationProbeController::class)

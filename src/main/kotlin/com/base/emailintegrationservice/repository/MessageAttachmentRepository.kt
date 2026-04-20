@@ -6,4 +6,6 @@ import java.util.UUID
 
 interface MessageAttachmentRepository : JpaRepository<MessageAttachment, UUID> {
     fun findByMessageId(messageId: UUID): List<MessageAttachment>
+
+    fun findByMessageIdIn(messageIds: List<UUID>): List<MessageAttachment>
 }
