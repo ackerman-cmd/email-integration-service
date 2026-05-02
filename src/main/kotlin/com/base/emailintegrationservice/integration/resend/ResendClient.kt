@@ -4,14 +4,17 @@ import com.base.emailintegrationservice.integration.resend.dto.ResendEmailConten
 import com.base.emailintegrationservice.integration.resend.dto.ResendSendRequest
 import com.base.emailintegrationservice.integration.resend.dto.ResendSendResponse
 import com.resend.Resend
-import com.resend.services.emails.model.Attachment
-import com.resend.services.emails.model.CreateEmailOptions
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
+import org.springframework.web.client.RestClient
+import org.springframework.web.client.body
 
 @Component
 class ResendClient(
     private val resend: Resend,
+    @Qualifier("resendRestClient") private val restClient: RestClient,
 ) {
     private val log = LoggerFactory.getLogger(ResendClient::class.java)
 
@@ -51,37 +54,15 @@ class ResendClient(
             idempotencyKey,
         )
 
-        val params =
-            CreateEmailOptions
-                .builder()
-                .from(request.from)
-                .to(request.to)
-                .subject(request.subject)
-                .apply {
-                    request.html?.let { html(it) }
-                    request.text?.let { text(it) }
-                    request.cc?.let { cc(it) }
-                    request.replyTo?.let { replyTo(it) }
-                    request.headers?.let { headers(it) }
-                    request.attachments?.takeIf { it.isNotEmpty() }?.let { reqAttachments ->
-                        attachments(
-                            reqAttachments.map { a ->
-                                Attachment
-                                    .builder()
-                                    .fileName(a.filename)
-                                    .content(a.content)
-                                    .apply { a.contentType?.let { contentType(it) } }
-                                    .build()
-                            },
-                        )
-                    }
-                }.build()
-
-        val response =
-            resend.emails().send(params)
-                ?: throw ResendApiException("Empty response from Resend API")
-
-        return ResendSendResponse(id = response.id)
+        return restClient
+            .post()
+            .uri("/emails")
+            .header("Idempotency-Key", idempotencyKey)
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(request)
+            .retrieve()
+            .body<ResendSendResponse>()
+            ?: throw ResendApiException("Empty response from Resend API")
     }
 }
 
